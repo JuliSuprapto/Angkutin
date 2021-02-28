@@ -1,0 +1,2 @@
+rootProject.name='Angkut-V0.1'
+include ':app'
