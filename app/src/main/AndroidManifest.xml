@@ -23,7 +23,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".Confirm"></activity>
+        <activity android:name=".driver.ListPesanan"></activity>
+        <activity android:name=".user.Pesanan" />
+        <activity android:name=".user.Confirm" />
         <activity android:name=".driver.UpdateDriver" />
         <activity android:name=".user.UpdateUser" />
         <activity android:name=".user.CompleteUser" />

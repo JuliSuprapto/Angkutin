@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.android.volley.RequestQueue;
@@ -37,9 +38,10 @@ import java.util.HashMap;
 
 public class Login extends AppCompatActivity {
 
-    Button doLogin, bRegistDriver, bRegistUser;
+    Button doLogin;
     TextInputEditText bUsername, bPassword;
     ProgressDialog progressDialog;
+    LinearLayout bRegistUser, bRegistDriver;
 
     private RequestQueue mRequestQueue;
     ModelAccess profile;
@@ -49,8 +51,8 @@ public class Login extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        bRegistUser = (Button) findViewById(R.id.regist_pengguna);
-        bRegistDriver = (Button) findViewById(R.id.regist_driver);
+        bRegistUser = (LinearLayout) findViewById(R.id.regist_pengguna);
+        bRegistDriver = (LinearLayout) findViewById(R.id.regist_driver);
         doLogin = (Button) findViewById(R.id.do_login);
 
         bUsername = (TextInputEditText) findViewById(R.id.username);

@@ -15,4 +15,10 @@ public class BaseURL {
     public static String updateUser = baseUrl + "access/updateUser/";
     public static String updateDriver = baseUrl + "access/updateDriver/";
 
+    public static String addPesanan = baseUrl + "pesan/addPesanan";
+    public static String getPesanan = baseUrl + "pesan/getdataPesananDriver/";
+    public static String getPesananUser = baseUrl + "pesan/getdataPesananUser/";
+    public static String deletePesanan = baseUrl + "pesan/deleteDataPesanan/";
+    public static String updatePesanan = baseUrl + "pesan/updateDataPesanan/";
+
 }

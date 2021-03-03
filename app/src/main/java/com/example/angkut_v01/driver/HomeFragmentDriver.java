@@ -1,10 +1,10 @@
 package com.example.angkut_v01.driver;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.android.volley.Request;
@@ -21,15 +22,16 @@ import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-import com.example.angkut_v01.AdapterDriver;
+import com.blogspot.atifsoftwares.animatoolib.Animatoo;
+import com.example.angkut_v01.adapter.AdapterDriver;
 import com.example.angkut_v01.R;
-import com.example.angkut_v01.adapter.RecycleViewAdapter;
 import com.example.angkut_v01.model.ModelAccess;
 import com.example.angkut_v01.model.ModelDriver;
 import com.example.angkut_v01.server.BaseURL;
 import com.example.angkut_v01.utils.App;
 import com.example.angkut_v01.utils.GsonHelper;
 import com.example.angkut_v01.utils.Prefs;
+import com.muddzdev.styleabletoastlibrary.StyleableToast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -49,8 +51,10 @@ public class HomeFragmentDriver extends Fragment {
     List<ModelDriver> listDrivers;
     private RequestQueue mRequestQueue;
     ProgressDialog progressDialog;
-    TextView nameUser;
+    TextView nameUser, jumlahPesananD;
     ModelAccess modelAccess;
+    String _idDriver, _idUser;
+    LinearLayout pesananData;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -61,13 +65,13 @@ public class HomeFragmentDriver extends Fragment {
         progressDialog.setCancelable(false);
 
         recycleDriver = (RecyclerView) v.findViewById(R.id.listDriver);
+        jumlahPesananD = (TextView) v.findViewById(R.id.jumlahPesanan);
+        pesananData = (LinearLayout) v.findViewById(R.id.pesananList);
         nameUser = (TextView) v.findViewById(R.id.namaUser);
         recycleDriver.setHasFixedSize(true);
         recycleDriver.setLayoutManager(new LinearLayoutManager(getActivity()));
         listDrivers = new ArrayList<>();
         recycleViewAdapter = new AdapterDriver(getActivity(), listDrivers);
-        getAllDriver();
-
 
         modelAccess = (ModelAccess) GsonHelper.parseGson(
                 App.getPref().getString(Prefs.PREF_STORE_PROFILE, ""),
@@ -75,8 +79,49 @@ public class HomeFragmentDriver extends Fragment {
         );
 
         nameUser.setText(modelAccess.getFullname());
+        _idDriver = modelAccess.get_id();
+
+        getAllDriver();
+        getPesanan(_idDriver);
+
+        pesananData.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getActivity(), ListPesanan.class));
+                Animatoo.animateSlideDown(getActivity());
+            }
+        });
 
         return v;
+    }
+
+    private void getPesanan(final String _idDriver) {
+        final JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET, BaseURL.getPesanan + _idDriver, null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        System.out.println("response = " + response);
+                        try {
+                            boolean statusMsg = response.getBoolean("error");
+                            if (statusMsg == false) {
+                                String data = response.getString("data");
+                                JSONArray jsonArray = new JSONArray(data);
+                                int lengthData = jsonArray.length();
+                                jumlahPesananD.setText(String.valueOf(lengthData));
+                            } else {
+                                StyleableToast.makeText(getActivity(), "DATA KOSONG", R.style.toastStyleWarning).show();
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                VolleyLog.e("Error: ", error.getMessage());
+            }
+        });
+        mRequestQueue.add(req);
     }
 
     private void getAllDriver() {

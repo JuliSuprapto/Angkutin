@@ -21,7 +21,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -34,9 +33,8 @@ import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-import com.example.angkut_v01.AdapterDriver;
+import com.blogspot.atifsoftwares.animatoolib.Animatoo;
 import com.example.angkut_v01.R;
-import com.example.angkut_v01.access.Login;
 import com.example.angkut_v01.adapter.RecycleViewAdapter;
 import com.example.angkut_v01.model.ModelAccess;
 import com.example.angkut_v01.model.ModelDriver;
@@ -44,8 +42,6 @@ import com.example.angkut_v01.server.BaseURL;
 import com.example.angkut_v01.utils.App;
 import com.example.angkut_v01.utils.GsonHelper;
 import com.example.angkut_v01.utils.Prefs;
-import com.firebase.ui.database.FirebaseRecyclerAdapter;
-import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
@@ -67,10 +63,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.muddzdev.styleabletoastlibrary.StyleableToast;
-import com.squareup.picasso.Picasso;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -78,7 +71,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executor;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -88,7 +80,7 @@ public class HomeFragmentUser extends Fragment {
 
     private SupportMapFragment supportMapFragment;
     private FusedLocationProviderClient client;
-     ModelAccess profile;
+    ModelAccess profile;
     FirebaseDatabase database;
     private DatabaseReference reference;
     private Button findData;
@@ -100,7 +92,7 @@ public class HomeFragmentUser extends Fragment {
     List<ModelDriver> listDataDriver;
     int markerImage;
     float jarakaDriverNow;
-    String key, _idDriver;
+    String key, _idDriver, _idUser;
     double latLast, lngLast;
 
     @Override
@@ -111,6 +103,8 @@ public class HomeFragmentUser extends Fragment {
                 App.getPref().getString(Prefs.PREF_STORE_PROFILE, ""),
                 new ModelAccess()
         );
+
+        _idUser = profile.get_id();
 
         database = FirebaseDatabase.getInstance();
         reference = database.getInstance().getReference("location");
@@ -209,7 +203,34 @@ public class HomeFragmentUser extends Fragment {
             }
         });
 
+        getPesanan(_idUser);
+
         return v;
+    }
+
+    private void getPesanan(final String _idUser) {
+        final JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET, BaseURL.getPesananUser + _idUser, null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        System.out.println("response = " + response);
+                        try {
+                            boolean statusMsg = response.getBoolean("error");
+                            if (statusMsg == false) {
+                                startActivity(new Intent(getActivity(), Pesanan.class));
+                                Animatoo.animateSlideDown(getActivity());
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                VolleyLog.e("Error: ", error.getMessage());
+            }
+        });
+        mRequestQueue.add(req);
     }
 
     private void getCurrentLocation() {

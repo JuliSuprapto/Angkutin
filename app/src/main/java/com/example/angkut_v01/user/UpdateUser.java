@@ -176,7 +176,7 @@ public class UpdateUser extends AppCompatActivity {
                             String strMsg = jsonObject.getString("msg");
                             boolean status = jsonObject.getBoolean("error");
                             if (status == false) {
-                                JSONObject user = jsonObject.getJSONObject("result");
+                                JSONObject user = jsonObject.getJSONObject("data");
                                 Utils.storeProfile(user.toString());
                                 startActivity(new Intent(UpdateUser.this, MainUser.class));
                                 Animatoo.animateSlideDown(UpdateUser.this);

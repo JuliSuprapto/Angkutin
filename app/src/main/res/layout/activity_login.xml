@@ -125,19 +125,33 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/t_password" />
 
-    <Button
+    <LinearLayout
         android:id="@+id/regist_pengguna"
         android:layout_width="370dp"
         android:layout_height="40dp"
         android:layout_marginTop="15dp"
-        android:background="@android:color/transparent"
-        android:text="Daftarkan diri anda sebagai penguna"
-        android:textAllCaps="false"
-        android:textColor="@color/black"
+        android:gravity="center"
+        android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.487"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/do_login" />
+        app:layout_constraintTop_toBottomOf="@+id/do_login">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ingin mendaftar sebagai pengguna ?"
+            android:textColor="@color/black" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Daftar disini !"
+            android:layout_marginLeft="5dp"
+            android:textColor="@color/blue"
+            android:textStyle="bold" />
+
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/or"
@@ -166,17 +180,32 @@
 
     </LinearLayout>
 
-    <Button
+
+    <LinearLayout
         android:id="@+id/regist_driver"
         android:layout_width="370dp"
         android:layout_height="40dp"
-        android:background="@android:color/transparent"
-        android:text="Daftarkan diri anda sebagai driver"
-        android:textAllCaps="false"
-        android:textColor="@color/black"
+        android:gravity="center"
+        android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.487"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/or" />
+        app:layout_constraintTop_toBottomOf="@+id/or">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ingin mendaftar sebagai driver ?"
+            android:textColor="@color/black" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Daftar disini !"
+            android:layout_marginLeft="5dp"
+            android:textColor="@color/blue"
+            android:textStyle="bold" />
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

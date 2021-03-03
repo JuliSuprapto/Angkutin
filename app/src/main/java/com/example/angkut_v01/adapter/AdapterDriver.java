@@ -1,17 +1,15 @@
-package com.example.angkut_v01;
+package com.example.angkut_v01.adapter;
 
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.angkut_v01.adapter.RecycleViewAdapter;
+import com.example.angkut_v01.R;
 import com.example.angkut_v01.model.ModelDriver;
 import com.example.angkut_v01.server.BaseURL;
 import com.squareup.picasso.Picasso;

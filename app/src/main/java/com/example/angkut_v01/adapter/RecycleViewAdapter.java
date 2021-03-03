@@ -6,12 +6,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.angkut_v01.Confirm;
+import com.example.angkut_v01.user.Confirm;
 import com.example.angkut_v01.R;
 import com.example.angkut_v01.model.ModelDriver;
 import com.example.angkut_v01.server.BaseURL;

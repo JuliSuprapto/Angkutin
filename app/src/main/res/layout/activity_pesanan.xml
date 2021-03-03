@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="@color/white"
     android:orientation="vertical"
-    tools:context=".driver.HomeFragmentDriver">
+    tools:context=".user.Pesanan">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -52,58 +52,63 @@
 
         </LinearLayout>
 
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
         <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:layout_weight="1"
-            android:gravity="center|right">
+            android:id="@+id/check_a"
+            android:layout_width="match_parent"
+            android:layout_height="350dp"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="visible">
 
-            <LinearLayout
-                android:id="@+id/pesananList"
+            <com.airbnb.lottie.LottieAnimationView
+                android:layout_width="300dp"
+                android:layout_height="250dp"
+                app:lottie_autoPlay="true"
+                app:lottie_loop="true"
+                app:lottie_rawRes="@raw/check_a" />
+
+            <TextView
                 android:layout_width="wrap_content"
-                android:layout_height="25dp"
-                android:background="@drawable/round_badge"
-                android:gravity="center"
-                android:orientation="horizontal"
-                android:padding="5dp">
+                android:layout_height="wrap_content"
+                android:text="MENUNGGU KONFIRMASI DRIVER"
+                android:textColor="@color/blue"
+                android:textSize="15dp"
+                android:textStyle="bold" />
 
-                <ImageView
-                    android:layout_width="18dp"
-                    android:layout_height="18dp"
-                    android:layout_marginLeft="5dp"
-                    android:layout_marginRight="10dp"
-                    android:src="@drawable/ic_notifications_none_black_24dp"
-                    android:tint="@color/white" />
+        </LinearLayout>
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="5dp"
-                    android:text="Pesanan"
-                    android:textColor="@color/white"
-                    android:textSize="12sp" />
+        <LinearLayout
+            android:id="@+id/check_b"
+            android:layout_width="match_parent"
+            android:layout_height="350dp"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="gone">
 
-                <TextView
-                    android:id="@+id/jumlahPesanan"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="5dp"
-                    android:text="0"
-                    android:textColor="@color/white"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
+            <com.airbnb.lottie.LottieAnimationView
+                android:layout_width="300dp"
+                android:layout_height="250dp"
+                app:lottie_autoPlay="true"
+                app:lottie_loop="true"
+                app:lottie_rawRes="@raw/check_b" />
 
-            </LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="DRIVER SEDANG DALAM PERJALANAN"
+                android:textColor="@color/blue"
+                android:textSize="15dp"
+                android:textStyle="bold" />
 
         </LinearLayout>
 
     </LinearLayout>
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/listDriver"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:listitem="@layout/item_view" />
 
 </LinearLayout>
