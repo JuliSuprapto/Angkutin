@@ -126,33 +126,6 @@
         app:layout_constraintTop_toBottomOf="@+id/t_password" />
 
     <LinearLayout
-        android:id="@+id/reset_password"
-        android:layout_width="370dp"
-        android:layout_height="40dp"
-        android:gravity="center"
-        android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.487"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/do_login">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Lupa password ?"
-            android:textColor="@color/black" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Reset password disini !"
-            android:layout_marginLeft="5dp"
-            android:textColor="@color/blue"
-            android:textStyle="bold" />
-
-    </LinearLayout>
-
-    <LinearLayout
         android:id="@+id/regist_pengguna"
         android:layout_width="370dp"
         android:layout_height="40dp"
@@ -162,7 +135,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.487"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/reset_password">
+        app:layout_constraintTop_toBottomOf="@+id/do_login">
 
         <TextView
             android:layout_width="wrap_content"
@@ -230,6 +203,35 @@
             android:layout_height="wrap_content"
             android:text="Daftar disini !"
             android:layout_marginLeft="5dp"
+            android:textColor="@color/blue"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/reset_password"
+        android:layout_width="370dp"
+        android:layout_height="40dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.487"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/regist_driver"
+        app:layout_constraintVertical_bias="0.833">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Lupa password ?"
+            android:textColor="@color/black" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:text="Reset password disini !"
             android:textColor="@color/blue"
             android:textStyle="bold" />
 
