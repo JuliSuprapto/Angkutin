@@ -1,6 +1,7 @@
 package com.example.angkut_v01.driver;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -38,6 +39,7 @@ public class AccountFragmentDriver extends Fragment {
     CircleImageView profilePhotoUser;
     ImageView backgroundProfile;
     ModelAccess profile ;
+    LinearLayout customer;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -52,6 +54,21 @@ public class AccountFragmentDriver extends Fragment {
         dPhone = (TextView)v.findViewById(R.id.phone);
         dAddress = (TextView)v.findViewById(R.id.address);
         dPlat = (TextView)v.findViewById(R.id.plat);
+
+        final String phoneD = "082279058667";
+        final String str1 = phoneD.replaceFirst("0", "+62");
+
+        customer = (LinearLayout) v.findViewById(R.id.customerCare);
+        customer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String url = "https://api.whatsapp.com/send?phone=" + str1;
+                Intent i = new Intent(Intent.ACTION_VIEW);
+                i.setPackage("com.whatsapp");
+                i.setData(Uri.parse(url));
+                startActivity(i);
+            }
+        });
 
         dLengkapi = (TextView)v.findViewById(R.id.lengkapiDriver);
         dLihat = (TextView)v.findViewById(R.id.showDataDriver);

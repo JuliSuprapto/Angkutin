@@ -1,6 +1,7 @@
 package com.example.angkut_v01.user;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -38,6 +39,8 @@ public class AccountFragmentUser extends Fragment {
     CircleImageView profilePhotoUser;
     ImageView backgroundProfile;
     ModelAccess profile ;
+    LinearLayout customer;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_account_user, container, false);
@@ -53,6 +56,21 @@ public class AccountFragmentUser extends Fragment {
         dEmail = (TextView)v.findViewById(R.id.email);
         dLengkapi = (TextView)v.findViewById(R.id.lengkapiDataUser);
         dLihat = (TextView)v.findViewById(R.id.showData);
+
+        final String phoneD = "082279058667";
+        final String str1 = phoneD.replaceFirst("0", "+62");
+
+        customer = (LinearLayout) v.findViewById(R.id.customerCare);
+        customer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String url = "https://api.whatsapp.com/send?phone=" + str1;
+                Intent i = new Intent(Intent.ACTION_VIEW);
+                i.setPackage("com.whatsapp");
+                i.setData(Uri.parse(url));
+                startActivity(i);
+            }
+        });
 
         profile = (ModelAccess) GsonHelper.parseGson(
                 App.getPref().getString(Prefs.PREF_STORE_PROFILE, ""),
