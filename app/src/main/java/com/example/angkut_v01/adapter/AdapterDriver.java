@@ -46,7 +46,7 @@ public class AdapterDriver extends RecyclerView.Adapter<AdapterDriver.ViewHolder
         holder.fullname.setText(driver.getFullname());
         holder.phone.setText(driver.getPhone());
         holder.plat.setText(driver.getPlat());
-        holder.jarak.setText(String.valueOf(driver.getJarak()) + " Km");
+        holder.jarak.setText("");
     }
 
     @Override

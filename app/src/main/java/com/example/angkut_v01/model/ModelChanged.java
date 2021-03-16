@@ -2,14 +2,14 @@ package com.example.angkut_v01.model;
 
 public class ModelChanged {
 
-    String _id, fullname, address, nik, phone, plat, fotoprofile, role;
+    String _id, fullname, address, nik, phone, plat, fotoprofile, role, status;
     double latitude, longitude;
 
     public ModelChanged() {
 
     }
 
-    public ModelChanged(String _id, String fullname, String address, String nik, String phone, String plat, String fotoprofile, String role, double latitude, double longitude) {
+    public ModelChanged(String _id, String fullname, String address, String nik, String phone, String plat, String fotoprofile, String role, double latitude, double longitude, String status) {
         this._id = _id;
         this.fullname = fullname;
         this.address = address;
@@ -20,6 +20,7 @@ public class ModelChanged {
         this.role = role;
         this.latitude = latitude;
         this.longitude = longitude;
+        this.status = status;
     }
 
     public String get_id() {
@@ -100,5 +101,13 @@ public class ModelChanged {
 
     public void setLongitude(double longitude) {
         this.longitude = longitude;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

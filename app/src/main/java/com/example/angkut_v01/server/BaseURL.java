@@ -14,6 +14,7 @@ public class BaseURL {
     public static String completeDriver = baseUrl + "access/completeDriver/";
     public static String updateUser = baseUrl + "access/updateUser/";
     public static String updateDriver = baseUrl + "access/updateDriver/";
+    public static String updateStatus = baseUrl + "access/updateStatus/";
 
     public static String addPesanan = baseUrl + "pesan/addPesanan";
     public static String getPesanan = baseUrl + "pesan/getdataPesananDriver/";

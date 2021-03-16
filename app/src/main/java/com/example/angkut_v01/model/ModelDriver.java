@@ -2,16 +2,17 @@ package com.example.angkut_v01.model;
 
 public class ModelDriver {
 
-    String _id, fullname, phone, plat, profilephoto;
+    String _id, fullname, phone, plat, profilephoto, status;
     float jarak;
 
-    public ModelDriver(String _id, String fullname, String phone, String plat, String profilephoto, float jarak) {
+    public ModelDriver(String _id, String fullname, String phone, String plat, String profilephoto, float jarak, String status) {
         this._id = _id;
         this.fullname = fullname;
         this.phone = phone;
         this.plat = plat;
         this.profilephoto = profilephoto;
         this.jarak = jarak;
+        this.status = status;
     }
 
     public ModelDriver() {
@@ -62,4 +63,11 @@ public class ModelDriver {
 
     public void setJarak(float jarak) { this.jarak = jarak; }
 
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 }

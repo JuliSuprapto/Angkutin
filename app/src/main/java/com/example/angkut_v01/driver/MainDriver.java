@@ -15,12 +15,22 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.example.angkut_v01.R;
 import com.example.angkut_v01.model.ModelAccess;
 import com.example.angkut_v01.model.ModelChanged;
+import com.example.angkut_v01.model.ModelDriver;
+import com.example.angkut_v01.server.BaseURL;
 import com.example.angkut_v01.utils.App;
 import com.example.angkut_v01.utils.GsonHelper;
 import com.example.angkut_v01.utils.Prefs;
@@ -36,6 +46,12 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.ismaeldivita.chipnavigation.ChipNavigationBar;
 import com.muddzdev.styleabletoastlibrary.StyleableToast;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.HashMap;
+
 public class MainDriver extends AppCompatActivity implements OnMapReadyCallback, LocationListener {
 
     private static final String TAG = MainDriver.class.getSimpleName();
@@ -50,6 +66,8 @@ public class MainDriver extends AppCompatActivity implements OnMapReadyCallback,
     private final int MAX_DISTANCE = 1; //1meter
     private GoogleMap mMap;
     ModelChanged modelChanged;
+    String _idDriver, statusDriver;
+    private RequestQueue mRequestQueue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +75,7 @@ public class MainDriver extends AppCompatActivity implements OnMapReadyCallback,
         setContentView(R.layout.activity_main_driver);
 
         bottomNav = findViewById(R.id.bottom_nav);
+        mRequestQueue = Volley.newRequestQueue(this);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             Window w = getWindow();
@@ -68,7 +87,7 @@ public class MainDriver extends AppCompatActivity implements OnMapReadyCallback,
                 new ModelAccess()
         );
 
-        String _idDriver = profile.get_id();
+        _idDriver = profile.get_id();
         manager = (LocationManager) getSystemService(LOCATION_SERVICE);
         reference = FirebaseDatabase.getInstance().getReference("location").child(_idDriver);
 
@@ -117,6 +136,8 @@ public class MainDriver extends AppCompatActivity implements OnMapReadyCallback,
         maps.getMapAsync(this);
 
         getLocationUpdate();
+
+        getAllDriver(_idDriver);
     }
 
     private void getLocationUpdate() {
@@ -164,6 +185,35 @@ public class MainDriver extends AppCompatActivity implements OnMapReadyCallback,
         }, 2000);
     }
 
+    private void getAllDriver(final String _idDriver) {
+
+        final JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET, BaseURL.showUser + _idDriver, null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            JSONObject jObj = new JSONObject(response.toString());
+                            String strMsg = jObj.getString("msg");
+                            boolean status = jObj.getBoolean("error");
+                            if (status == false) {
+                                JSONObject dataDriver = jObj.getJSONObject("data");
+                                String statusD = dataDriver.getString("status");
+                                statusDriver = statusD;
+                                System.out.println("STATUS DRIVER NOW " + statusDriver);
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                VolleyLog.e("Error: ", error.getMessage());
+            }
+        });
+        mRequestQueue.add(req);
+    }
+
     @Override
     public void onLocationChanged(Location location) {
         if (location != null) {
@@ -178,8 +228,10 @@ public class MainDriver extends AppCompatActivity implements OnMapReadyCallback,
             String plat = profile.getPlat();
             double latitude = location.getLatitude();
             double longitude = location.getLongitude();
+            String status = statusDriver;
+            System.out.println("STATUS DRiVER LOCATION" + status);
 
-            modelChanged = new ModelChanged(_id, fullname, address, nik, phone, plat, profilephoto, role, latitude, longitude);
+            modelChanged = new ModelChanged(_id, fullname, address, nik, phone, plat, profilephoto, role, latitude, longitude, status);
             saveLocation(modelChanged);
         } else {
             StyleableToast.makeText(this, "Tidak ada lokasi...", R.style.toastStyleDefault).show();

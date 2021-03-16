@@ -177,7 +177,7 @@ public class UpdateDriver extends AppCompatActivity {
                             String strMsg = jsonObject.getString("msg");
                             boolean status = jsonObject.getBoolean("error");
                             if (status == false) {
-                                JSONObject user = jsonObject.getJSONObject("data");
+                                JSONObject user = jsonObject.getJSONObject("result");
                                 Utils.storeProfile(user.toString());
                                 startActivity(new Intent(UpdateDriver.this, MainDriver.class));
                                 Animatoo.animateSlideDown(UpdateDriver.this);

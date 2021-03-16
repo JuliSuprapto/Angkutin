@@ -108,8 +108,6 @@ public class HomeFragmentDriver extends Fragment {
                                 JSONArray jsonArray = new JSONArray(data);
                                 int lengthData = jsonArray.length();
                                 jumlahPesananD.setText(String.valueOf(lengthData));
-                            } else {
-                                StyleableToast.makeText(getActivity(), "DATA KOSONG", R.style.toastStyleWarning).show();
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();

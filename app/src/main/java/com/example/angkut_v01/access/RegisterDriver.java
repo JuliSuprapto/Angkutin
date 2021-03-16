@@ -73,6 +73,7 @@ public class RegisterDriver extends AppCompatActivity {
                 String sEmail = null;
                 String sAddress = null;
                 String sProfilePhoto = null;
+                String sStatus = "on";
                 String sPlat = bPlat.getText().toString();
 
                 if (sNik.isEmpty()) {
@@ -88,13 +89,13 @@ public class RegisterDriver extends AppCompatActivity {
                 }else if (sPlat.isEmpty()) {
                     StyleableToast.makeText(RegisterDriver.this, "Email tidak boleh di kosongkan...", R.style.toastStyleWarning).show();
                 } else {
-                    registDriver(sNik, sFullname, sUsername, sPassword, sPhone, sEmail, sAddress, sProfilePhoto, sPlat);
+                    registDriver(sNik, sFullname, sUsername, sPassword, sPhone, sEmail, sAddress, sProfilePhoto, sPlat, sStatus);
                 }
             }
         });
     }
 
-    public void registDriver(String nik, String fullname, String username, String password, String phone, String email, String address, String profilephoto, String plat) {
+    public void registDriver(String nik, String fullname, String username, String password, String phone, String email, String address, String profilephoto, String plat, String status) {
 
         HashMap<String, String> params = new HashMap<String, String>();
 
@@ -108,6 +109,7 @@ public class RegisterDriver extends AppCompatActivity {
         params.put("profilephoto", profilephoto);
         params.put("role", "2");
         params.put("plat", plat);
+        params.put("status", "on");
         progressDialog.setTitle("Mohon tunggu sebentar...");
         showDialog();
 

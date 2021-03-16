@@ -152,45 +152,48 @@ public class HomeFragmentUser extends Fragment {
 
                         for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
 
-                            ModelDriver modelDriver = new ModelDriver();
-                            double latNew = dataSnapshot.child("latitude").getValue(Double.class);
-                            double lngNew = dataSnapshot.child("longitude").getValue(Double.class);
+                            String statusDriver = dataSnapshot.child("status").getValue(String.class);
+                            if (statusDriver.equals("on")) {
 
-                            clients.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
-                                @Override
-                                public void onSuccess(Location location) {
-                                    if (location != null){
-                                        latLast = location.getLatitude();
-                                        lngLast = location.getLongitude();
+                                ModelDriver modelDriver = new ModelDriver();
+                                double latNew = dataSnapshot.child("latitude").getValue(Double.class);
+                                double lngNew = dataSnapshot.child("longitude").getValue(Double.class);
+
+                                clients.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
+                                    @Override
+                                    public void onSuccess(Location location) {
+                                        if (location != null) {
+                                            latLast = location.getLatitude();
+                                            lngLast = location.getLongitude();
+                                        }
                                     }
+                                });
+
+                                String _id = dataSnapshot.child("_id").getValue(String.class);
+                                String fullname = dataSnapshot.child("fullname").getValue(String.class);
+                                String phone = dataSnapshot.child("phone").getValue(String.class);
+                                String plat = dataSnapshot.child("plat").getValue(String.class);
+                                String foto = dataSnapshot.child("fotoprofile").getValue(String.class);
+                                if (foto == null) {
+                                    foto = "default.png";
                                 }
-                            });
+                                System.out.println("FOTO" + foto);
 
-                            String _id = dataSnapshot.child("_id").getValue(String.class);
-                            String fullname = dataSnapshot.child("fullname").getValue(String.class);
-                            String phone = dataSnapshot.child("phone").getValue(String.class);
-                            String plat = dataSnapshot.child("plat").getValue(String.class);
-                            String foto = dataSnapshot.child("fotoprofile").getValue(String.class);
-                            if (foto == null){
-                                foto = "default.png";
+                                final float result[] = new float[10];
+                                Location.distanceBetween(latLast, lngLast, latNew, lngNew, result);
+                                float distanceLocation = result[0] / 1000;
+                                float resultLocation = (float) (Math.round(distanceLocation * 100)) / 100;
+                                jarakaDriverNow = resultLocation;
+
+                                modelDriver.set_id(_id);
+                                modelDriver.setFullname(fullname);
+                                modelDriver.setPhone(phone);
+                                modelDriver.setPlat(plat);
+                                modelDriver.setProfilephoto(foto);
+                                modelDriver.setJarak(jarakaDriverNow);
+
+                                listDataDriver.add(modelDriver);
                             }
-                            System.out.println("FOTO" + foto);
-
-                            final float result[] = new float[10];
-                            Location.distanceBetween(latLast, lngLast, latNew, lngNew, result);
-                            float distanceLocation = result[0] / 1000;
-                            float resultLocation = (float) (Math.round(distanceLocation * 100)) / 100;
-                            jarakaDriverNow = resultLocation;
-
-                            modelDriver.set_id(_id);
-                            modelDriver.setFullname(fullname);
-                            modelDriver.setPhone(phone);
-                            modelDriver.setPlat(plat);
-                            modelDriver.setProfilephoto(foto);
-                            modelDriver.setJarak(jarakaDriverNow);
-
-                            listDataDriver.add(modelDriver);
-
                         }
                         recycleViewAdapter.notifyDataSetChanged();
                     }
@@ -244,7 +247,7 @@ public class HomeFragmentUser extends Fragment {
                         public void onMapReady(final GoogleMap googleMap) {
 
                             mMap = googleMap;
-
+                            markerImage = R.drawable.ic_delivery_truck;
                             final Map<String, Marker> mNamedMarkers = new HashMap<String, Marker>();
 
                             reference.addChildEventListener(new ChildEventListener() {
@@ -254,25 +257,28 @@ public class HomeFragmentUser extends Fragment {
                                         key = snapshot.getKey();
                                         Log.d("KEY", key);
                                         if (snapshot.hasChild("latitude") && snapshot.hasChild("longitude")) {
-                                            double latNew = snapshot.child("latitude").getValue(Double.class);
-                                            double lngNew = snapshot.child("longitude").getValue(Double.class);
+                                            String statusDriver = snapshot.child("status").getValue(String.class);
+                                            if (statusDriver.equals("on")) {
+                                                double latNew = snapshot.child("latitude").getValue(Double.class);
+                                                double lngNew = snapshot.child("longitude").getValue(Double.class);
 
-                                            markerImage = R.drawable.ic_delivery_truck;
+                                                markerImage = R.drawable.ic_delivery_truck;
 
-                                            LatLng newLocation = new LatLng(latNew, lngNew);
-                                            Marker marker = mNamedMarkers.get(key);
-                                            if (marker == null) {
-                                                MarkerOptions options = getMarkerOption(key);
-                                                marker = mMap.addMarker(options.position(newLocation));
-                                                mNamedMarkers.put(key, marker);
-                                            } else {
-                                                marker.setPosition(newLocation);
+                                                LatLng newLocation = new LatLng(latNew, lngNew);
+                                                Marker marker = mNamedMarkers.get(key);
+                                                if (marker == null) {
+                                                    MarkerOptions options = getMarkerOption(key);
+                                                    marker = mMap.addMarker(options.position(newLocation));
+                                                    mNamedMarkers.put(key, marker);
+                                                } else {
+                                                    marker.setPosition(newLocation);
+                                                }
                                             }
                                         } else {
                                             System.out.println("Long or Lat were null!!!");
                                         }
-                                    }
 
+                                    }
                                 }
 
                                 @Override
@@ -280,19 +286,20 @@ public class HomeFragmentUser extends Fragment {
                                     if (!snapshot.equals(null)) {
                                         key = snapshot.getKey();
                                         if (snapshot.hasChild("latitude") && snapshot.hasChild("longitude")) {
-                                            double latNew = snapshot.child("latitude").getValue(Double.class);
-                                            double lngNew = snapshot.child("longitude").getValue(Double.class);
+                                            String statusDriver = snapshot.child("status").getValue(String.class);
+                                            if (statusDriver.equals("on")) {
+                                                double latNew = snapshot.child("latitude").getValue(Double.class);
+                                                double lngNew = snapshot.child("longitude").getValue(Double.class);
 
-                                            markerImage = R.drawable.ic_delivery_truck;
-
-                                            LatLng newLocation = new LatLng(latNew, lngNew);
-                                            Marker marker = mNamedMarkers.get(key);
-                                            if (marker == null) {
-                                                MarkerOptions options = getMarkerOption(key);
-                                                marker = mMap.addMarker(options.position(newLocation));
-                                                mNamedMarkers.put(key, marker);
-                                            } else {
-                                                marker.setPosition(newLocation);
+                                                LatLng newLocation = new LatLng(latNew, lngNew);
+                                                Marker marker = mNamedMarkers.get(key);
+                                                if (marker == null) {
+                                                    MarkerOptions options = getMarkerOption(key);
+                                                    marker = mMap.addMarker(options.position(newLocation));
+                                                    mNamedMarkers.put(key, marker);
+                                                } else {
+                                                    marker.setPosition(newLocation);
+                                                }
                                             }
                                         } else {
                                             System.out.println("Long or Lat were null!!!");
@@ -309,7 +316,8 @@ public class HomeFragmentUser extends Fragment {
                                 }
 
                                 @Override
-                                public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                                public void onChildMoved(@NonNull DataSnapshot
+                                                                 snapshot, @Nullable String previousChildName) {
                                     Log.d("PRIORITY FOR", snapshot.getKey());
                                 }
 
@@ -323,8 +331,12 @@ public class HomeFragmentUser extends Fragment {
                             googleMap.setMinZoomPreference(15.0f);
                             googleMap.setMaxZoomPreference(20.0f);
                             googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(nowLocation, 16.0f));
-                            googleMap.getUiSettings().setZoomControlsEnabled(true);
-                            googleMap.getUiSettings().setMyLocationButtonEnabled(true);
+                            googleMap.getUiSettings().
+
+                                    setZoomControlsEnabled(true);
+                            googleMap.getUiSettings().
+
+                                    setMyLocationButtonEnabled(true);
                             googleMap.setMyLocationEnabled(true);
                             googleMap.setPadding(0, 100, 0, 150);
                         }

@@ -2,14 +2,14 @@ package com.example.angkut_v01.model;
 
 public class ModelAccess {
 
-    String _id, nik, fullname, username, password, phone, address, profilephoto, email, plat, role;
+    String _id, nik, fullname, username, password, phone, address, profilephoto, email, plat, role, status;
     double latitude, longitude;
 
     public ModelAccess() {
 
     }
 
-    public ModelAccess(String _id, String nik, String fullname, String username, String password, String phone, String address, String profilephoto, String email, String plat, String role, double latitude, double longitude) {
+    public ModelAccess(String _id, String nik, String fullname, String username, String password, String phone, String address, String profilephoto, String email, String plat, String role, double latitude, double longitude, String status) {
         this._id = _id;
         this.nik = nik;
         this.fullname = fullname;
@@ -23,6 +23,7 @@ public class ModelAccess {
         this.role = role;
         this.latitude = latitude;
         this.longitude = longitude;
+        this.status = status;
     }
 
     public String get_id() {
@@ -125,5 +126,13 @@ public class ModelAccess {
 
     public void setLongitude(double longitude) {
         this.longitude = longitude;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }
