@@ -52,7 +52,7 @@ import org.json.JSONObject;
 
 import java.util.HashMap;
 
-public class MainDriver extends AppCompatActivity implements OnMapReadyCallback, LocationListener {
+public class MainDriver extends AppCompatActivity {
 
     private static final String TAG = MainDriver.class.getSimpleName();
     ChipNavigationBar bottomNav;
@@ -60,12 +60,6 @@ public class MainDriver extends AppCompatActivity implements OnMapReadyCallback,
     ModelAccess profile;
     boolean BackPress = false;
 
-    private DatabaseReference reference;
-    private LocationManager manager;
-    private final int MIN_TIME = 1000; //1sec
-    private final int MAX_DISTANCE = 1; //1meter
-    private GoogleMap mMap;
-    ModelChanged modelChanged;
     String _idDriver, statusDriver;
     private RequestQueue mRequestQueue;
 
@@ -88,8 +82,6 @@ public class MainDriver extends AppCompatActivity implements OnMapReadyCallback,
         );
 
         _idDriver = profile.get_id();
-        manager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        reference = FirebaseDatabase.getInstance().getReference("location").child(_idDriver);
 
         if (!Utils.isLoggedIn()) {
             bottomNav.setItemSelected(R.id.account, true);
@@ -127,46 +119,7 @@ public class MainDriver extends AppCompatActivity implements OnMapReadyCallback,
             }
         });
 
-        LocationRequest locationRequest = LocationRequest.create();
-        locationRequest.setInterval(1000);
-        locationRequest.setFastestInterval(5000);
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
-        MapView maps = (MapView) findViewById(R.id.maps_google_driver);
-        maps.getMapAsync(this);
-
-        getLocationUpdate();
-
         getAllDriver(_idDriver);
-    }
-
-    private void getLocationUpdate() {
-        if (manager != null) {
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
-                    ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                if (manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                    manager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME, MAX_DISTANCE, this);
-                } else if (manager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
-                    manager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME, MAX_DISTANCE, this);
-                } else {
-                    StyleableToast.makeText(this, "Tidak ada provider...", R.style.toastStyleDefault).show();
-                }
-            } else {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 101);
-            }
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == 101) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                getLocationUpdate();
-            } else {
-                StyleableToast.makeText(this, "Membutuhkan hak akses...", R.style.toastStyleDefault).show();
-            }
-        }
     }
 
     @Override
@@ -212,57 +165,5 @@ public class MainDriver extends AppCompatActivity implements OnMapReadyCallback,
             }
         });
         mRequestQueue.add(req);
-    }
-
-    @Override
-    public void onLocationChanged(Location location) {
-        if (location != null) {
-
-            String _id = profile.get_id();
-            String fullname = profile.getFullname();
-            String address = profile.getAddress();
-            String nik = profile.getNik();
-            String phone = profile.getPhone();
-            String profilephoto = profile.getProfilephoto();
-            String role = profile.getRole();
-            String plat = profile.getPlat();
-            double latitude = location.getLatitude();
-            double longitude = location.getLongitude();
-            String status = statusDriver;
-            System.out.println("STATUS DRiVER LOCATION" + status);
-
-            modelChanged = new ModelChanged(_id, fullname, address, nik, phone, plat, profilephoto, role, latitude, longitude, status);
-            saveLocation(modelChanged);
-        } else {
-            StyleableToast.makeText(this, "Tidak ada lokasi...", R.style.toastStyleDefault).show();
-        }
-    }
-
-    private void saveLocation(ModelChanged modelChanged) {
-        if (Utils.isLoggedIn()) {
-            reference.setValue(modelChanged);
-            Log.d("DATA LOCATION", String.valueOf(modelChanged));
-        }
-    }
-
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-
-    }
-
-    @Override
-    public void onProviderEnabled(String provider) {
-
-    }
-
-    @Override
-    public void onProviderDisabled(String provider) {
-
-    }
-
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
-        LatLng sydney = new LatLng(31, 74);
     }
 }

@@ -1,12 +1,20 @@
 package com.example.angkut_v01.driver;
 
+import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -25,12 +33,22 @@ import com.android.volley.toolbox.Volley;
 import com.blogspot.atifsoftwares.animatoolib.Animatoo;
 import com.example.angkut_v01.adapter.AdapterDriver;
 import com.example.angkut_v01.R;
+import com.example.angkut_v01.adapter.AdapterPesanan;
 import com.example.angkut_v01.model.ModelAccess;
+import com.example.angkut_v01.model.ModelChanged;
 import com.example.angkut_v01.model.ModelDriver;
+import com.example.angkut_v01.model.ModelPesanan;
 import com.example.angkut_v01.server.BaseURL;
 import com.example.angkut_v01.utils.App;
 import com.example.angkut_v01.utils.GsonHelper;
 import com.example.angkut_v01.utils.Prefs;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.muddzdev.styleabletoastlibrary.StyleableToast;
 
 import org.json.JSONArray;
@@ -40,21 +58,34 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.content.Context.LOCATION_SERVICE;
+
 /**
  * A simple {@link Fragment} subclass.
  * create an instance of this fragment.
  */
-public class HomeFragmentDriver extends Fragment {
+public class HomeFragmentDriver extends Fragment implements OnMapReadyCallback, LocationListener {
 
-    RecyclerView recycleDriver;
+    private DatabaseReference reference;
+    private LocationManager manager;
+    private final int MIN_TIME = 1000; //1sec
+    private final int MAX_DISTANCE = 1; //1meter
+    private GoogleMap mMap;
+    ModelChanged modelChanged;
+    String _idDriver, statusDriver;
+    String dataStatus;
+
+    RecyclerView recyclePesanan;
     RecyclerView.Adapter recycleViewAdapter;
-    List<ModelDriver> listDrivers;
+    List<ModelPesanan> listPesanan;
+
     private RequestQueue mRequestQueue;
     ProgressDialog progressDialog;
     TextView nameUser, jumlahPesananD;
     ModelAccess modelAccess;
-    String _idDriver, _idUser;
-    LinearLayout pesananData;
+    String _idUser;
+    LinearLayout pesananData, noDataItem, availableDataItem;
+    SwipeRefreshLayout swipeRefreshLayout;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -64,35 +95,86 @@ public class HomeFragmentDriver extends Fragment {
         progressDialog = new ProgressDialog(getActivity());
         progressDialog.setCancelable(false);
 
-        recycleDriver = (RecyclerView) v.findViewById(R.id.listDriver);
         jumlahPesananD = (TextView) v.findViewById(R.id.jumlahPesanan);
         pesananData = (LinearLayout) v.findViewById(R.id.pesananList);
         nameUser = (TextView) v.findViewById(R.id.namaUser);
-        recycleDriver.setHasFixedSize(true);
-        recycleDriver.setLayoutManager(new LinearLayoutManager(getActivity()));
-        listDrivers = new ArrayList<>();
-        recycleViewAdapter = new AdapterDriver(getActivity(), listDrivers);
+        noDataItem = (LinearLayout) v.findViewById(R.id.no_item);
+        availableDataItem = (LinearLayout) v.findViewById(R.id.available_item);
+        swipeRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.swipe_refresh);
+
+        recyclePesanan = (RecyclerView) v.findViewById(R.id.listPesanan);
+        nameUser = (TextView) v.findViewById(R.id.namaUser);
+        recyclePesanan.setHasFixedSize(true);
+        recyclePesanan.setLayoutManager(new LinearLayoutManager(getActivity()));
+        listPesanan = new ArrayList<>();
+        recycleViewAdapter = new AdapterPesanan(getActivity(), listPesanan);
 
         modelAccess = (ModelAccess) GsonHelper.parseGson(
                 App.getPref().getString(Prefs.PREF_STORE_PROFILE, ""),
                 new ModelAccess()
         );
 
+        System.out.println("DATA HOME = " + modelAccess.getStatus());
+
         nameUser.setText(modelAccess.getFullname());
         _idDriver = modelAccess.get_id();
 
-        getAllDriver();
-        getPesanan(_idDriver);
+        manager = (LocationManager) getActivity().getSystemService(LOCATION_SERVICE);
+        reference = FirebaseDatabase.getInstance().getReference("location").child(_idDriver);
 
-        pesananData.setOnClickListener(new View.OnClickListener() {
+        getPesanan(_idDriver);
+        getAllPesanan(_idDriver);
+
+        LocationRequest locationRequest = LocationRequest.create();
+        locationRequest.setInterval(1000);
+        locationRequest.setFastestInterval(5000);
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        MapView maps = (MapView) v.findViewById(R.id.maps_google_driver);
+        maps.getMapAsync(this);
+
+        getLocationUpdate();
+
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
-            public void onClick(View v) {
-                startActivity(new Intent(getActivity(), ListPesanan.class));
-                Animatoo.animateSlideDown(getActivity());
+            public void onRefresh() {
+                getAllPesanan(_idDriver);
+                listPesanan.clear();
+                recycleViewAdapter.notifyDataSetChanged();
+                swipeRefreshLayout.setRefreshing(false);
             }
         });
 
         return v;
+    }
+
+    private void getLocationUpdate() {
+        if (manager != null) {
+            if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+                    ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                if (manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                    manager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME, MAX_DISTANCE, this);
+                } else if (manager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+                    manager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME, MAX_DISTANCE, this);
+                } else {
+                    StyleableToast.makeText(getActivity(), "Tidak ada provider...", R.style.toastStyleDefault).show();
+                }
+            } else {
+                ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 101);
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 101) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                getLocationUpdate();
+            } else {
+                StyleableToast.makeText(getActivity(), "Membutuhkan hak akses...", R.style.toastStyleDefault).show();
+            }
+        }
     }
 
     private void getPesanan(final String _idDriver) {
@@ -122,15 +204,11 @@ public class HomeFragmentDriver extends Fragment {
         mRequestQueue.add(req);
     }
 
-    private void getAllDriver() {
-        progressDialog.setTitle("Mohon tunggu sebentar...");
-        showDialog();
-
-        final JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET, BaseURL.showUser, null,
+    private void getAllPesanan(final String _idDriver) {
+        final JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET, BaseURL.getPesanan + _idDriver, null,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
-                        hideDialog();
                         try {
                             boolean status = response.getBoolean("error");
                             if (status == false) {
@@ -139,23 +217,28 @@ public class HomeFragmentDriver extends Fragment {
                                 JSONArray jsonArray = new JSONArray(data);
                                 for (int i = 0; i < jsonArray.length(); i++) {
                                     JSONObject jsonObject = jsonArray.getJSONObject(i);
-                                    final ModelDriver driver = new ModelDriver();
-                                    final String roles = jsonObject.getString("role");
-                                    final String _id = jsonObject.getString("_id");
+                                    final ModelPesanan pesanan = new ModelPesanan();
+                                    final String _idPesanan = jsonObject.getString("_id");
+                                    final String _idUser = jsonObject.getString("idUser");
+                                    final String _idDriver = jsonObject.getString("idDriver");
                                     final String fullname = jsonObject.getString("fullname");
                                     final String phone = jsonObject.getString("phone");
-                                    final String plat = jsonObject.getString("plat");
-                                    final String photoProfile = jsonObject.getString("profilephoto");
-                                    if (roles.equals("2")) {
-                                        driver.setFullname(fullname);
-                                        driver.setPhone(phone);
-                                        driver.setPlat(plat);
-                                        driver.setProfilephoto(photoProfile);
-                                        driver.set_id(_id);
-                                        listDrivers.add(driver);
-                                        recycleDriver.setAdapter(recycleViewAdapter);
-                                    }
+                                    String statusUser = jsonObject.getString("status");
+                                    pesanan.setStatus(statusUser);
+                                    pesanan.set_idPesanan(_idPesanan);
+                                    pesanan.setFullnameUser(fullname);
+                                    pesanan.setPhoneUser(phone);
+                                    pesanan.set_idUser(_idUser);
+                                    pesanan.set_idDriver(_idDriver);
+                                    listPesanan.add(pesanan);
+                                    recyclePesanan.setAdapter(recycleViewAdapter);
+
                                 }
+                                noDataItem.setVisibility(View.GONE);
+                                availableDataItem.setVisibility(View.VISIBLE);
+                            } else {
+                                noDataItem.setVisibility(View.VISIBLE);
+                                availableDataItem.setVisibility(View.GONE);
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -165,7 +248,6 @@ public class HomeFragmentDriver extends Fragment {
             @Override
             public void onErrorResponse(VolleyError error) {
                 VolleyLog.e("Error: ", error.getMessage());
-                hideDialog();
             }
         });
         mRequestQueue.add(req);
@@ -185,5 +267,55 @@ public class HomeFragmentDriver extends Fragment {
             progressDialog.setContentView(R.layout.dialog_loading);
             progressDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        if (location != null) {
+
+            String _id = modelAccess.get_id();
+            String fullname = modelAccess.getFullname();
+            String address = modelAccess.getAddress();
+            String nik = modelAccess.getNik();
+            String phone = modelAccess.getPhone();
+            String profilephoto = modelAccess.getProfilephoto();
+            String role = modelAccess.getRole();
+            String plat = modelAccess.getPlat();
+            double latitude = location.getLatitude();
+            double longitude = location.getLongitude();
+            String dataStatus = modelAccess.getStatus();
+
+            System.out.println("STATUS LOCATION = " + dataStatus);
+
+            modelChanged = new ModelChanged(_id, fullname, address, nik, phone, plat, profilephoto, role, latitude, longitude, dataStatus);
+            saveLocation(modelChanged);
+        } else {
+            StyleableToast.makeText(getActivity(), "Tidak ada lokasi...", R.style.toastStyleDefault).show();
+        }
+    }
+
+    private void saveLocation(ModelChanged modelChanged) {
+        reference.setValue(modelChanged);
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+        LatLng sydney = new LatLng(31, 74);
     }
 }

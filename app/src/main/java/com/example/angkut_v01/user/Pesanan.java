@@ -1,6 +1,7 @@
 package com.example.angkut_v01.user;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentManager;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -16,6 +17,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.blogspot.atifsoftwares.animatoolib.Animatoo;
 import com.example.angkut_v01.R;
+import com.example.angkut_v01.driver.HomeFragmentDriver;
 import com.example.angkut_v01.model.ModelAccess;
 import com.example.angkut_v01.server.BaseURL;
 import com.example.angkut_v01.utils.App;
@@ -77,6 +79,10 @@ public class Pesanan extends AppCompatActivity {
                                     checka.setVisibility(View.GONE);
                                     checkb.setVisibility(View.VISIBLE);
                                 }
+                            }else {
+                                FragmentManager fragmentManager = getSupportFragmentManager();
+                                HomeFragmentUser homeFragment = new HomeFragmentUser();
+                                fragmentManager.beginTransaction().replace(R.id.fragment_container, homeFragment).commit();
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();

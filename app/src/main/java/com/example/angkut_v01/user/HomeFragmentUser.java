@@ -16,6 +16,7 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -36,6 +37,7 @@ import com.android.volley.toolbox.Volley;
 import com.blogspot.atifsoftwares.animatoolib.Animatoo;
 import com.example.angkut_v01.R;
 import com.example.angkut_v01.adapter.RecycleViewAdapter;
+import com.example.angkut_v01.driver.HomeFragmentDriver;
 import com.example.angkut_v01.model.ModelAccess;
 import com.example.angkut_v01.model.ModelDriver;
 import com.example.angkut_v01.server.BaseURL;
@@ -62,7 +64,6 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -81,6 +82,7 @@ public class HomeFragmentUser extends Fragment {
     private SupportMapFragment supportMapFragment;
     private FusedLocationProviderClient client;
     ModelAccess profile;
+    ModelDriver modelDriver;
     FirebaseDatabase database;
     private DatabaseReference reference;
     private Button findData;
@@ -91,7 +93,6 @@ public class HomeFragmentUser extends Fragment {
     private RequestQueue mRequestQueue;
     List<ModelDriver> listDataDriver;
     int markerImage;
-    float jarakaDriverNow;
     String key, _idDriver, _idUser;
     double latLast, lngLast;
 
@@ -114,6 +115,8 @@ public class HomeFragmentUser extends Fragment {
         mRequestQueue = Volley.newRequestQueue(getActivity());
         progressDialog = new ProgressDialog(getActivity());
         progressDialog.setCancelable(false);
+
+        modelDriver = new ModelDriver();
 
         supportMapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.maps_google);
         client = LocationServices.getFusedLocationProviderClient(getActivity());
@@ -142,25 +145,23 @@ public class HomeFragmentUser extends Fragment {
                 recycleView.setLayoutManager(new LinearLayoutManager(getActivity()));
                 listDataDriver = new ArrayList<>();
                 recycleViewAdapter = new RecycleViewAdapter(getActivity(), listDataDriver);
-                recycleView.setAdapter(recycleViewAdapter);
 
                 bottomSheetDialog.setContentView(bottomSheetView);
                 bottomSheetDialog.show();
                 final FusedLocationProviderClient clients = LocationServices.getFusedLocationProviderClient(getActivity());
 
-                reference.addValueEventListener(new ValueEventListener() {
+                reference.addChildEventListener(new ChildEventListener() {
                     @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-
-                        for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
-
-                            String statusDriver = dataSnapshot.child("status").getValue(String.class);
-                            if (statusDriver != null && !statusDriver.equals("on")) {
-                                if (statusDriver.equals("on")) {
-
-                                    ModelDriver modelDriver = new ModelDriver();
-                                    double latNew = dataSnapshot.child("latitude").getValue(Double.class);
-                                    double lngNew = dataSnapshot.child("longitude").getValue(Double.class);
+                    public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                        if (!snapshot.equals(null)) {
+                            key = snapshot.getKey();
+                            Log.d("KEY", key);
+                            ModelDriver modelDriverList = new ModelDriver();
+                            if (snapshot.hasChild("latitude") && snapshot.hasChild("longitude")) {
+                                String statusDriver = snapshot.child("status").getValue(String.class);
+                                if (statusDriver != null && !statusDriver.equals("off")) {
+                                    double latNew = snapshot.child("latitude").getValue(Double.class);
+                                    double lngNew = snapshot.child("longitude").getValue(Double.class);
 
                                     clients.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
                                         @Override
@@ -172,34 +173,98 @@ public class HomeFragmentUser extends Fragment {
                                         }
                                     });
 
-                                    String _id = dataSnapshot.child("_id").getValue(String.class);
-                                    String fullname = dataSnapshot.child("fullname").getValue(String.class);
-                                    String phone = dataSnapshot.child("phone").getValue(String.class);
-                                    String plat = dataSnapshot.child("plat").getValue(String.class);
-                                    String foto = dataSnapshot.child("fotoprofile").getValue(String.class);
+                                    String _id = snapshot.child("_id").getValue(String.class);
+                                    String fullname = snapshot.child("fullname").getValue(String.class);
+                                    String phone = snapshot.child("phone").getValue(String.class);
+                                    String plat = snapshot.child("plat").getValue(String.class);
+                                    String foto = snapshot.child("fotoprofile").getValue(String.class);
+
                                     if (foto == null) {
                                         foto = "default.png";
                                     }
-                                    System.out.println("FOTO" + foto);
 
                                     final float result[] = new float[10];
                                     Location.distanceBetween(latLast, lngLast, latNew, lngNew, result);
                                     float distanceLocation = result[0] / 1000;
                                     float resultLocation = (float) (Math.round(distanceLocation * 100)) / 100;
-                                    jarakaDriverNow = resultLocation;
+                                    float jarakaDriverNow = resultLocation;
 
-                                    modelDriver.set_id(_id);
-                                    modelDriver.setFullname(fullname);
-                                    modelDriver.setPhone(phone);
-                                    modelDriver.setPlat(plat);
-                                    modelDriver.setProfilephoto(foto);
-                                    modelDriver.setJarak(jarakaDriverNow);
+                                    modelDriverList.set_id(_id);
+                                    modelDriverList.setFullname(fullname);
+                                    modelDriverList.setPhone(phone);
+                                    modelDriverList.setPlat(plat);
+                                    modelDriverList.setProfilephoto(foto);
+                                    modelDriverList.setJarak(jarakaDriverNow);
 
-                                    listDataDriver.add(modelDriver);
+                                    listDataDriver.add(modelDriverList);
+                                    recycleView.setAdapter(recycleViewAdapter);
                                 }
+                                recycleViewAdapter.notifyDataSetChanged();
                             }
                         }
-                        recycleViewAdapter.notifyDataSetChanged();
+                    }
+
+                    @Override
+                    public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                        if (!snapshot.equals(null)) {
+                            key = snapshot.getKey();
+                            Log.d("KEY", key);
+                            ModelDriver modelDriverList = new ModelDriver();
+                            if (snapshot.hasChild("latitude") && snapshot.hasChild("longitude")) {
+                                String statusDriver = snapshot.child("status").getValue(String.class);
+                                if (statusDriver != null && !statusDriver.equals("off")) {
+                                    double latNew = snapshot.child("latitude").getValue(Double.class);
+                                    double lngNew = snapshot.child("longitude").getValue(Double.class);
+
+                                    clients.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
+                                        @Override
+                                        public void onSuccess(Location location) {
+                                            if (location != null) {
+                                                latLast = location.getLatitude();
+                                                lngLast = location.getLongitude();
+                                            }
+                                        }
+                                    });
+
+                                    String _id = snapshot.child("_id").getValue(String.class);
+                                    String fullname = snapshot.child("fullname").getValue(String.class);
+                                    String phone = snapshot.child("phone").getValue(String.class);
+                                    String plat = snapshot.child("plat").getValue(String.class);
+                                    String foto = snapshot.child("fotoprofile").getValue(String.class);
+
+                                    if (foto == null) {
+                                        foto = "default.png";
+                                    }
+
+                                    final float result[] = new float[10];
+                                    Location.distanceBetween(latLast, lngLast, latNew, lngNew, result);
+                                    float distanceLocation = result[0] / 1000;
+                                    float resultLocation = (float) (Math.round(distanceLocation * 100)) / 100;
+                                    float jarakaDriverNow = resultLocation;
+
+                                    modelDriverList.set_id(_id);
+                                    modelDriverList.setFullname(fullname);
+                                    modelDriverList.setPhone(phone);
+                                    modelDriverList.setPlat(plat);
+                                    modelDriverList.setProfilephoto(foto);
+                                    modelDriverList.setJarak(jarakaDriverNow);
+
+                                    listDataDriver.add(modelDriverList);
+                                    recycleView.setAdapter(recycleViewAdapter);
+                                }
+                                recycleViewAdapter.notifyDataSetChanged();
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+
+                    }
+
+                    @Override
+                    public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
                     }
 
                     @Override
@@ -220,7 +285,7 @@ public class HomeFragmentUser extends Fragment {
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
-                        System.out.println("response = " + response);
+                        System.out.println("DATA = " + response);
                         try {
                             JSONObject jObj = new JSONObject(response.toString());
                             String strMsg = jObj.getString("msg");
@@ -228,6 +293,10 @@ public class HomeFragmentUser extends Fragment {
                             if (statusMsg == false) {
                                 startActivity(new Intent(getActivity(), Pesanan.class));
                                 Animatoo.animateSlideDown(getActivity());
+                            }else {
+                                FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+                                HomeFragmentUser homeFragment = new HomeFragmentUser();
+                                fragmentManager.beginTransaction().replace(R.id.fragment_container, homeFragment).commit();
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -269,33 +338,18 @@ public class HomeFragmentUser extends Fragment {
                                                 double latNew = snapshot.child("latitude").getValue(Double.class);
                                                 double lngNew = snapshot.child("longitude").getValue(Double.class);
 
+                                                String platDriver = snapshot.child("plat").getValue(String.class);
+
                                                 LatLng newLocation = new LatLng(latNew, lngNew);
                                                 Marker marker = mNamedMarkers.get(key);
                                                 if (marker == null) {
                                                     MarkerOptions options = getMarkerOption(key);
-                                                    marker = mMap.addMarker(options.position(newLocation));
+                                                    marker = mMap.addMarker(options.position(newLocation).title(platDriver));
                                                     mNamedMarkers.put(key, marker);
                                                 } else {
                                                     marker.setPosition(newLocation);
                                                 }
-//                                                } else {
-//                                                    System.out.println("Long or Lat were null!!!");
-//                                                }
                                             }
-//                                            else {
-//                                                double latNew = snapshot.child("latitude").getValue(Double.class);
-//                                                double lngNew = snapshot.child("longitude").getValue(Double.class);
-//
-//                                                LatLng newLocation = new LatLng(latNew, lngNew);
-//                                                Marker marker = mNamedMarkers.get(key);
-//                                                if (marker == null) {
-//                                                    MarkerOptions options = getMarkerOption(key);
-//                                                    marker = mMap.addMarker(options.position(newLocation));
-//                                                    mNamedMarkers.put(key, marker);
-//                                                } else {
-//                                                    marker.setPosition(newLocation);
-//                                                }
-//                                            }
                                         }
                                     }
                                 }
@@ -307,37 +361,21 @@ public class HomeFragmentUser extends Fragment {
                                         if (snapshot.hasChild("latitude") && snapshot.hasChild("longitude")) {
                                             String statusDriver = snapshot.child("status").getValue(String.class);
                                             if (statusDriver != null && !statusDriver.equals("off")) {
-//                                                if (statusDriver.equals("on")) {
                                                 double latNew = snapshot.child("latitude").getValue(Double.class);
                                                 double lngNew = snapshot.child("longitude").getValue(Double.class);
+
+                                                String platDriver = snapshot.child("plat").getValue(String.class);
 
                                                 LatLng newLocation = new LatLng(latNew, lngNew);
                                                 Marker marker = mNamedMarkers.get(key);
                                                 if (marker == null) {
                                                     MarkerOptions options = getMarkerOption(key);
-                                                    marker = mMap.addMarker(options.position(newLocation));
+                                                    marker = mMap.addMarker(options.position(newLocation).title(platDriver));
                                                     mNamedMarkers.put(key, marker);
                                                 } else {
                                                     marker.setPosition(newLocation);
                                                 }
-//                                                } else {
-//                                                    System.out.println("Long or Lat were null!!!");
-//                                                }
                                             }
-//                                            else {
-//                                                double latNew = snapshot.child("latitude").getValue(Double.class);
-//                                                double lngNew = snapshot.child("longitude").getValue(Double.class);
-//
-//                                                LatLng newLocation = new LatLng(latNew, lngNew);
-//                                                Marker marker = mNamedMarkers.get(key);
-//                                                if (marker == null) {
-//                                                    MarkerOptions options = getMarkerOption(key);
-//                                                    marker = mMap.addMarker(options.position(newLocation));
-//                                                    mNamedMarkers.put(key, marker);
-//                                                } else {
-//                                                    marker.setPosition(newLocation);
-//                                                }
-//                                            }
                                         }
                                     }
                                 }
@@ -351,8 +389,7 @@ public class HomeFragmentUser extends Fragment {
                                 }
 
                                 @Override
-                                public void onChildMoved(@NonNull DataSnapshot
-                                                                 snapshot, @Nullable String previousChildName) {
+                                public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
                                     Log.d("PRIORITY FOR", snapshot.getKey());
                                 }
 
@@ -366,12 +403,8 @@ public class HomeFragmentUser extends Fragment {
                             googleMap.setMinZoomPreference(15.0f);
                             googleMap.setMaxZoomPreference(20.0f);
                             googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(nowLocation, 16.0f));
-                            googleMap.getUiSettings().
-
-                                    setZoomControlsEnabled(true);
-                            googleMap.getUiSettings().
-
-                                    setMyLocationButtonEnabled(true);
+                            googleMap.getUiSettings().setZoomControlsEnabled(true);
+                            googleMap.getUiSettings().setMyLocationButtonEnabled(true);
                             googleMap.setMyLocationEnabled(true);
                             googleMap.setPadding(0, 100, 0, 150);
                         }
@@ -395,28 +428,11 @@ public class HomeFragmentUser extends Fragment {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == 44) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 getCurrentLocation();
             }
-        }
-    }
-
-    private void showDialog() {
-        if (!progressDialog.isShowing()) {
-            progressDialog.show();
-            progressDialog.setContentView(R.layout.dialog_loading);
-            progressDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
-        }
-    }
-
-    private void hideDialog() {
-        if (progressDialog.isShowing()) {
-            progressDialog.dismiss();
-            progressDialog.setContentView(R.layout.dialog_loading);
-            progressDialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
     }
 }

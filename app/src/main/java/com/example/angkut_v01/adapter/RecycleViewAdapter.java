@@ -50,6 +50,8 @@ public class RecycleViewAdapter extends RecyclerView.Adapter<RecycleViewAdapter.
         holder.jarak.setText(String.valueOf(driver.getJarak()) + " Km");
         holder._id = (driver.get_id());
 
+        System.out.println("DATA NAMA = " + driver.getFullname());
+
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -79,9 +81,5 @@ public class RecycleViewAdapter extends RecyclerView.Adapter<RecycleViewAdapter.
             jarak = itemView.findViewById(R.id.jarakDriverList);
 
         }
-    }
-
-    public interface OnListItemClick {
-        void onClick(View view, int position);
     }
 }

@@ -23,11 +23,4 @@
         android:padding="5dp"
         app:cnb_menuResource="@menu/navbar_driver" />
 
-    <com.google.android.gms.maps.MapView
-        android:id="@+id/maps_google_driver"
-        android:name="com.google.android.gms.maps.SupportMapFragment"
-        android:layout_width="match_parent"
-        android:visibility="gone"
-        android:layout_height="match_parent" />
-
 </RelativeLayout>
