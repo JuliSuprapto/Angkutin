@@ -66,7 +66,6 @@ public class AccountFragmentDriver extends Fragment {
 
     TextView dFullname, dNik, dPhone, dAddress, dPlat, dLengkapi, dLihat;
 
-    Switch switchUser;
     LinearLayout bLogout;
     LottieAnimationView defaultPhoto;
     CircleImageView profilePhotoUser;
@@ -78,7 +77,7 @@ public class AccountFragmentDriver extends Fragment {
     FirebaseDatabase database;
     private DatabaseReference reference;
     private RequestQueue mRequestQueue;
-    String statusOn, _idDriver;
+    String _idDriver;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -104,32 +103,10 @@ public class AccountFragmentDriver extends Fragment {
         dPhone = (TextView) v.findViewById(R.id.phone);
         dAddress = (TextView) v.findViewById(R.id.address);
         dPlat = (TextView) v.findViewById(R.id.plat);
-        switchUser = (Switch) v.findViewById(R.id.switch_btn);
 
         _idDriver = profile.get_id();
         database = FirebaseDatabase.getInstance();
         reference = database.getInstance().getReference("location").child(_idDriver);
-
-        String statusDriver = profile.getStatus();
-
-        if (statusDriver.equals("on")) {
-            switchUser.setChecked(true);
-        } else {
-            switchUser.setChecked(false);
-        }
-
-        switchUser.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    statusOn = "on";
-                    updateStstusDriver(statusOn);
-                } else {
-                    statusOn = "off";
-                    updateStstusDriver(statusOn);
-                }
-            }
-        });
 
         final String phoneD = "082279058667";
         final String str1 = phoneD.replaceFirst("0", "+62");
@@ -200,58 +177,6 @@ public class AccountFragmentDriver extends Fragment {
         });
 
         return v;
-    }
-
-    private void updateStstusDriver(String statusOn) {
-
-        HashMap<String, String> params = new HashMap<String, String>();
-        params.put("status", statusOn);
-
-        System.out.println("DATA STATUS = " + statusOn);
-
-        progressDialog.setTitle("Mohon tunggu sebentar...");
-        showDialog();
-
-        JsonObjectRequest req = new JsonObjectRequest(Request.Method.PUT, BaseURL.updateStatus + _idDriver, new JSONObject(params),
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        hideDialog();
-                        try {
-                            JSONObject jsonObject = new JSONObject(response.toString());
-                            System.out.println("res = " + jsonObject.toString());
-                            String strMsg = response.getString("msg");
-                            boolean status = response.getBoolean("error");
-                            if (status == false) {
-                                JSONObject user = jsonObject.getJSONObject("result");
-                                Utils.storeProfile(user.toString());
-                                App.getPref().put(Prefs.PREF_STORE_PROFILE, user.toString());
-                                System.out.println("DATA SEMUANYA = " + profile.getStatus());
-
-                                FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-                                AccountFragmentDriver accountFragment = new AccountFragmentDriver();
-                                fragmentManager.beginTransaction().replace(R.id.fragment_container, accountFragment).commit();
-
-                            } else {
-
-                                FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-                                HomeFragmentDriver homeFragment = new HomeFragmentDriver();
-                                fragmentManager.beginTransaction().replace(R.id.fragment_container, homeFragment).commit();
-
-                                StyleableToast.makeText(getActivity().getApplicationContext(), strMsg, R.style.toastStyleWarning).show();
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                VolleyLog.e("Error: ", error.getMessage());
-                hideDialog();
-            }
-        });
-        mRequestQueue.add(req);
     }
 
     private void showDialog() {

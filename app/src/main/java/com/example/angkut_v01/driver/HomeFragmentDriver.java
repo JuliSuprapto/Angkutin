@@ -12,6 +12,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -20,7 +21,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
 import android.widget.LinearLayout;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import com.android.volley.Request;
@@ -42,6 +45,7 @@ import com.example.angkut_v01.server.BaseURL;
 import com.example.angkut_v01.utils.App;
 import com.example.angkut_v01.utils.GsonHelper;
 import com.example.angkut_v01.utils.Prefs;
+import com.example.angkut_v01.utils.Utils;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
@@ -56,6 +60,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import static android.content.Context.LOCATION_SERVICE;
@@ -75,6 +80,7 @@ public class HomeFragmentDriver extends Fragment implements OnMapReadyCallback, 
     String _idDriver, statusDriver;
     String dataStatus;
 
+    Switch switchUser;
     RecyclerView recyclePesanan;
     RecyclerView.Adapter recycleViewAdapter;
     List<ModelPesanan> listPesanan;
@@ -83,7 +89,7 @@ public class HomeFragmentDriver extends Fragment implements OnMapReadyCallback, 
     ProgressDialog progressDialog;
     TextView nameUser, jumlahPesananD;
     ModelAccess modelAccess;
-    String _idUser;
+    String _idUser, statusOn;
     LinearLayout pesananData, noDataItem, availableDataItem;
     SwipeRefreshLayout swipeRefreshLayout;
 
@@ -114,6 +120,28 @@ public class HomeFragmentDriver extends Fragment implements OnMapReadyCallback, 
                 new ModelAccess()
         );
 
+        switchUser = (Switch) v.findViewById(R.id.switch_btn);
+
+        String statusDriver = modelAccess.getStatus();
+
+        if (statusDriver.equals("on")) {
+            switchUser.setChecked(true);
+        } else {
+            switchUser.setChecked(false);
+        }
+
+        switchUser.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    statusOn = "on";
+                    updateStstusDriver(statusOn);
+                } else {
+                    statusOn = "off";
+                    updateStstusDriver(statusOn);
+                }
+            }
+        });
         System.out.println("DATA HOME = " + modelAccess.getStatus());
 
         nameUser.setText(modelAccess.getFullname());
@@ -248,6 +276,58 @@ public class HomeFragmentDriver extends Fragment implements OnMapReadyCallback, 
             @Override
             public void onErrorResponse(VolleyError error) {
                 VolleyLog.e("Error: ", error.getMessage());
+            }
+        });
+        mRequestQueue.add(req);
+    }
+
+    private void updateStstusDriver(String statusOn) {
+
+        HashMap<String, String> params = new HashMap<String, String>();
+        params.put("status", statusOn);
+
+        System.out.println("DATA STATUS = " + statusOn);
+
+        progressDialog.setTitle("Mohon tunggu sebentar...");
+        showDialog();
+
+        JsonObjectRequest req = new JsonObjectRequest(Request.Method.PUT, BaseURL.updateStatus + _idDriver, new JSONObject(params),
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        hideDialog();
+                        try {
+                            JSONObject jsonObject = new JSONObject(response.toString());
+                            System.out.println("res = " + jsonObject.toString());
+                            String strMsg = response.getString("msg");
+                            boolean status = response.getBoolean("error");
+                            if (status == false) {
+                                JSONObject user = jsonObject.getJSONObject("result");
+                                Utils.storeProfile(user.toString());
+                                App.getPref().put(Prefs.PREF_STORE_PROFILE, user.toString());
+                                System.out.println("DATA SEMUANYA = " + modelAccess.getStatus());
+
+                                FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+                                AccountFragmentDriver accountFragment = new AccountFragmentDriver();
+                                fragmentManager.beginTransaction().replace(R.id.fragment_container, accountFragment).commit();
+
+                            } else {
+
+                                FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+                                HomeFragmentDriver homeFragment = new HomeFragmentDriver();
+                                fragmentManager.beginTransaction().replace(R.id.fragment_container, homeFragment).commit();
+
+                                StyleableToast.makeText(getActivity().getApplicationContext(), strMsg, R.style.toastStyleWarning).show();
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                VolleyLog.e("Error: ", error.getMessage());
+                hideDialog();
             }
         });
         mRequestQueue.add(req);
